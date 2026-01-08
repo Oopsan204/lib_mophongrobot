@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Matrix.h"
+#include  "../matrix class/Matrix.h"
 
 int Gauss_Jordan(const smatrix& a, const vectorm& f, vectorm& x);
 //Giai he ft dai so tuyen tinh bang phuong phap Gauss_Jordan

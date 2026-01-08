@@ -1,5 +1,8 @@
 #include "NumMethod.h"
 
+#include <iostream>
+using namespace std;
+
 
 int Gauss_Jordan(const smatrix& a, const vectorm& f, vectorm& x)
 {

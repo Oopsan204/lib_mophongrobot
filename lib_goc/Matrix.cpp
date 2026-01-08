@@ -1,5 +1,5 @@
 // matrix.cpp: implementation of the matrix class.
-#include "../lib/Matrix.h"
+#include "matrix.h"
 #include <stdio.h>
 #include <conio.h>
 #include <process.h>
