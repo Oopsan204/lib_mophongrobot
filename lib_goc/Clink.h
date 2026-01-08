@@ -1,5 +1,5 @@
 #pragma once
-#include "../matrix class/Matrix.h"
+#include "Matrix.h"
 class CLink
 {
 public:

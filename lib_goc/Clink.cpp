@@ -1,6 +1,6 @@
 #include "CLink.h"
 #include <stdio.h>
-#include "../matrix class/Matrix.h"
+#include "Matrix.h"
 #include <math.h>
 // truyen vao cac tham so DH
 CLink::CLink() 

@@ -1,5 +1,5 @@
 ﻿#include "CRobot.h"
-#include "../NumMethod/NumMethod.h"
+#include "NumMethod.h"
 CRobot* pRobot = NULL;
 
 CRobot::CRobot()

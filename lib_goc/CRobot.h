@@ -1,5 +1,5 @@
 #pragma once
-#include "../matrix class/Matrix.h"
+#include "Matrix.h"
 #include "CLink.h"
 #include <vector>
 #define NUMBER_LINKS 4 // bang so khau cua robot(tinh ca khau de)
