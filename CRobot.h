@@ -30,13 +30,18 @@ class CRobot
     
     // Vector lưu trữ tọa độ x, y, z của đầu robot (end-effector) theo thời gian
     vector<double> pEx,pEy,pEz; // position of end-effector
-    
+
+
+    vector<double> pExv,pEyv,pEzv; // velocity of end-effector
+    vector<double>qv[NUMBER_LINKS]; // velocity of joint variables
+    vector<double> pExa,pEya,pEza; // acceleration of end-effector
+    vector<double>qa[NUMBER_LINKS]; // acceleration of joint variables
     // Mảng vector lưu trữ các biến khớp (joint variables) của từng link theo thời gian
     vector<double> q[NUMBER_LINKS]; // joint variables
 
     int idCurrentPoint; // Chỉ số điểm hiện tại trong quỹ đạo
 
-
+    double dAngle;
 
     /**
      * Constructor - Hàm khởi tạo robot
@@ -96,14 +101,16 @@ class CRobot
      * @param jointIndex: Chỉ số khớp (0, 1, 2)
      * @param angle: Góc cần kiểm tra (radian)
      * @return: Góc sau khi giới hạn (radian)
-     */
+        */
+
+    static CRobot* p_robot;
+    void SolvinginverseKinemaics_Velocity();
+    void SolvinginverseKinemaics_Acceleration();
     double ClampJointAngle(int jointIndex, double angle);
-    
-    /**
-     * Kiểm tra góc có nằm trong giới hạn cho phép không
-     * @param jointIndex: Chỉ số khớp (0, 1, 2)
-     * @param angle: Góc cần kiểm tra (radian)
-     * @return: true nếu góc hợp lệ, false nếu vượt giới hạn
-     */
-    bool IsJointAngleValid(int jointIndex, double angle);
+    static void funcJacobi(smatrix& a, vectorm& c, const vectorm& x);
+
+
 };
+
+
+

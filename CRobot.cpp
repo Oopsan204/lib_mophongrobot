@@ -1,21 +1,16 @@
 #include "../lib/CRobot.h"
 #include "../lib/NumMethod.h"
+#include "Matrix.h"
+#include <iostream>
 #include <cmath>
 #include <cstddef>
-CRobot* pRobot = NULL; // Con trỏ toàn cục đến đối tượng robot
 
+CRobot* CRobot::p_robot = NULL;
 
-
-
-
-/**
- * Constructor - Khởi tạo robot
- * Tự động gọi initRobot() để cấu hình các tham số DH ban đầu
- */
 CRobot::CRobot()
 {
     initRobot();
-    pRobot = this; // Gán con trỏ toàn cục đến đối tượng hiện tại
+    p_robot = this;
 }
 
 /**
@@ -44,19 +39,48 @@ void CRobot::initRobot()
     double L3 = 659;  // Chiều dài a của khớp 3
 
     // Link 0 (0→1): a=0, alpha=π/2, d=L1, theta=Q1 (biến)
-    links[0].SetConstants(0, PI/2, 0, L1);
+    links[0].SetConstants(0, PI/2, L1, 0);
     
     // Link 1 (1→2): a=L2, alpha=0, d=0, theta=Q2 (biến)
-    links[1].SetConstants(0, 0, L2, 0);
+    links[1].SetConstants(L2, 0, 0, 0);
     
     // Link 2 (2→3): a=L3, alpha=0, d=0, theta=Q3 (biến)
-    links[2].SetConstants(0, 0, L3, 0);
+    links[2].SetConstants(L3, 0, 0, 0);
     
     // Link 3: không sử dụng trong bảng DH này
     links[3].SetConstants(0, 0, 0, 0);
     
     LTool = 0;  // Chiều dài công cụ đầu robot
 
+}
+
+
+double CRobot::ClampJointAngle(int jointIndex, double angle)
+{
+    double min_angle, max_angle;
+    switch (jointIndex) {
+        case 0:
+            min_angle = Q1_MIN * PI / 180.0;
+            max_angle = Q1_MAX * PI / 180.0;
+            break;
+        case 1:
+            min_angle = Q2_MIN * PI / 180.0;
+            max_angle = Q2_MAX * PI / 180.0;
+            break;
+        case 2:
+            min_angle = Q3_MIN * PI / 180.0;
+            max_angle = Q3_MAX * PI / 180.0;
+            break;
+        default:
+            return angle;
+    }
+    if (angle < min_angle) {
+        return min_angle;
+    }
+    if (angle > max_angle) {
+        return max_angle;
+    }
+    return angle;
 }
 
 /**
@@ -90,7 +114,7 @@ vectorm pEx0,pEn(4);      // pEn: Vị trí end-effector trong hệ tọa độ 
 pEn[0]=0;        // X = 0 (nằm trên trục Z)
 pEn[1]=0;        // Y = 0 (nằm trên trục Z)
 pEn[2]=-LTool;   // Z = -LTool (chiều dài công cụ hướng xuống)
-pEn[3]=1;        // Thành phần đồng nhất        // Thành phần đồng nhất
+pEn[3]=1;        // Thành phần đồng nhất
 
 // Vòng lặp qua tất cả các điểm thời gian trong quỹ đạo
 for(int j=0;j<q[0].size();j++)
@@ -119,7 +143,7 @@ A0n = links[0].GetDHmatrix();
 for (int i=1;i<NUMBER_LINKS;i++)
 {
     Ai=links[i].GetDHmatrix();  // Lấy ma trận DH của link i
-    A0n=A0n*Ai;                 // Nhân tích lũy: A0n = A0n * Ai                 // Nhân tích lũy: A0n = A0n * Ai
+    A0n=A0n*Ai;                 // Nhân tích lũy: A0n = A0n * Ai
 
 }
 
@@ -138,7 +162,7 @@ pEx0=A0n*pEn;  // pEx0 = A0n * pEn = [x, y, z, 1]^T
 // Lưu tọa độ (x, y, z) vào mảng
 pEx[j]=pEx0[0];  // Tọa độ X
 pEy[j]=pEx0[1];  // Tọa độ Y
-pEz[j]=pEx0[2];  // Tọa độ Z  // Tọa độ Z
+pEz[j]=pEx0[2];  // Tọa độ Z
 
 }  // Kết thúc vòng lặp qua các điểm
 
@@ -176,10 +200,18 @@ void CRobot::SetNumPoint(const int& n)
     pEx.resize(n);  // Mảng tọa độ X
     pEy.resize(n);  // Mảng tọa độ Y
     pEz.resize(n);  // Mảng tọa độ Z
+    pExv.resize(n);  // Mảng vận tốc X
+    pEyv.resize(n);  // Mảng vận tốc Y
+    pEzv.resize(n);  // Mảng vận tốc Z
+    pExa.resize(n);  // Mảng gia tốc X
+    pEya.resize(n);  // Mảng gia tốc Y
+    pEza.resize(n);  // Mảng gia tốc Z
     
     // Cấp phát bộ nhớ cho mảng biến khớp của từng link
     for (int i = 0; i < NUMBER_LINKS; i++) {
         q[i].resize(n);  // Mỗi link có n giá trị khớp theo thời gian
+        qv[i].resize(n); // Mỗi link có n giá trị vận tốc khớp theo thời gian
+        qa[i].resize(n); // Mỗi link có n giá trị gia tốc khớp theo thời gian
     }
 }
 
@@ -193,10 +225,18 @@ void CRobot::Clear()
     pEx.clear();
     pEy.clear();
     pEz.clear();
+    pExv.clear();
+    pEyv.clear();
+    pEzv.clear();
+    pExa.clear();
+    pEya.clear();
+    pEza.clear();
     
     // Xóa mảng biến khớp của từng link
     for (int i = 0; i < NUMBER_LINKS; i++) {
         q[i].clear();
+        qv[i].clear();
+        qa[i].clear();
     }
 }
 
@@ -234,15 +274,41 @@ void CRobot::SetVariable()
 
 
 
-// Hàm tính Jacobian cho phương pháp Newton-Raphson
-// Dựa trên mô hình robot RRR:
-// x = cos(Q1) * (L2*cos(Q2) + L3*cos(Q2+Q3))
-// y = sin(Q1) * (L2*cos(Q2) + L3*cos(Q2+Q3))
-// z = L1 - L2*sin(Q2) - L3*sin(Q2+Q3)
-void funcJacobi(smatrix & a,vectorm& c,const vectorm& x)
+void CRobot::SetEndPoint()
 {
-    a.SetSize(GetSize(x));
-    c.SetSize(GetSize(x));
+    // Phương án tối ưu: Hình tròn trong mặt phẳng YZ phù hợp với giới hạn góc
+    int numSegments = 100;
+    SetNumPoint(numSegments + 1);  // Cấp phát cho 101 điểm (0 đến 100)
+    dAngle = 2 * PI / numSegments;
+    // Tham số hình tròn - Điều chỉnh để phù hợp với workspace và giới hạn góc
+    double x0 = 800;    // Tâm X (gần hơn với tầm với tối đa)
+    double y0 = 0;      // Tâm Y (trục chính phía trước robot)
+    double z0 = 300;    // Tâm Z (độ cao thấp hơn, an toàn hơn)
+    double r = 100;     // Bán kính nhỏ hơn (100mm thay vì 150mm)
+
+for (int j = 0; j < numSegments + 1; j++)
+{
+  // van toc diem cuoi
+  pEx[j] = x0 + r * sin(j * dAngle);
+  pEy[j] = y0 + r * cos(j * dAngle);
+  pEz[j] = 100 + j * 100 / numSegments;
+
+  // van toc diem cuoi
+  pExv[j] = r * cos(j * dAngle) * dAngle;
+  pEyv[j] = -r * sin(j * dAngle) * dAngle;
+  pEzv[j] = 100 / numSegments;
+
+  // gia toc diem cuoi
+  pExa[j] = -r * sin(j * dAngle) * dAngle * dAngle;
+  pEya[j] = -r * cos(j * dAngle) * dAngle * dAngle;
+  pEza[j] = 0;
+}
+}
+
+void CRobot::funcJacobi(smatrix & a,vectorm& c,const vectorm& x)
+{
+    a.SetSize(3);
+    c.SetSize(3);
 
     // x = [Q1, Q2, Q3]^T
     double q1 = x(0);
@@ -257,9 +323,9 @@ void funcJacobi(smatrix & a,vectorm& c,const vectorm& x)
     double s23 = sin(q2 + q3);
 
     // Lấy chiều dài các khớp từ bảng DH
-    double L1 = pRobot->links[0].d;  // Chiều cao khớp 1 (d của link 0) = 481
-    double L2 = pRobot->links[1].a;  // Chiều dài khớp 2 (a của link 1) = 560
-    double L3 = pRobot->links[2].a;  // Chiều dài khớp 3 (a của link 2) = 659
+    double L1 = p_robot->links[0].d;  // Chiều cao khớp 1 (d của link 0) = 481
+    double L2 = p_robot->links[1].a;  // Chiều dài khớp 2 (a của link 1) = 560
+    double L3 = p_robot->links[2].a;  // Chiều dài khớp 3 (a của link 2) = 659
     
     // Ma trận Jacobian J:
     // [∂x/∂q1  ∂x/∂q2  ∂x/∂q3]
@@ -292,34 +358,11 @@ void funcJacobi(smatrix & a,vectorm& c,const vectorm& x)
     double y_current = s1 * r;
     double z_current = L1 - L2*s2 - L3*s23;  // Chiều cao (481 - ...)
     
-    c(0) = x_current - pRobot->pEx[pRobot->idCurrentPoint];
-    c(1) = y_current - pRobot->pEy[pRobot->idCurrentPoint];
-    c(2) = z_current - pRobot->pEz[pRobot->idCurrentPoint];
+    c(0) = x_current - p_robot->pEx[p_robot->idCurrentPoint];
+    c(1) = y_current - p_robot->pEy[p_robot->idCurrentPoint];
+    c(2) = z_current - p_robot->pEz[p_robot->idCurrentPoint];
 }
 
-
-void CRobot::SetEndPoint()
-{
-    // Phương án tối ưu: Hình tròn trong mặt phẳng YZ phù hợp với giới hạn góc
-    int numSegments = 100;
-    SetNumPoint(numSegments + 1);  // Cấp phát cho 101 điểm (0 đến 100)
-
-    // Tham số hình tròn - Điều chỉnh để phù hợp với workspace và giới hạn góc
-    double x0 = 800;    // Tâm X (gần hơn với tầm với tối đa)
-    double y0 = 0;      // Tâm Y (trục chính phía trước robot)
-    double z0 = 300;    // Tâm Z (độ cao thấp hơn, an toàn hơn)
-    double r = 100;     // Bán kính nhỏ hơn (100mm thay vì 150mm)
-
-    for (int j = 0; j <= numSegments; j++) 
-    {
-        double theta = 2 * PI * j / numSegments;
-        
-        // Hình tròn trong mặt phẳng YZ (song song với robot)
-        pEx[j] = x0;                           // X cố định ở 800mm
-        pEy[j] = y0 + r * cos(theta);          // Y dao động ±100mm
-        pEz[j] = z0 + r * sin(theta);          // Z dao động ±100mm (200-400mm)
-    }
-}
 
 void CRobot::SolvingInverKinematicPosition()
 {
@@ -349,36 +392,13 @@ void CRobot::SolvingInverKinematicPosition()
         // Giải hệ phương trình phi tuyến bằng Newton-Raphson
         if (Newton_Raphson(x, funcJacobi, eps, maxloop) == 0) 
         {
-            // Kiểm tra và giới hạn các góc khớp
-            bool was_clamped = false;
-            
-            double q1_clamped = ClampJointAngle(0, x(0));
-            double q2_clamped = ClampJointAngle(1, x(1));
-            double q3_clamped = ClampJointAngle(2, x(2));
-            
-            // Kiểm tra xem có góc nào bị giới hạn không
-            if (fabs(x(0) - q1_clamped) > 1e-6 || 
-                fabs(x(1) - q2_clamped) > 1e-6 || 
-                fabs(x(2) - q3_clamped) > 1e-6)
-            {
-                was_clamped = true;
-                limited_count++;
-                // std::cout << "Warning at point " << j << ": Joint angle(s) exceeded limit and was clamped" << std::endl;
-            }
-            
             // Lưu nghiệm vào các biến khớp
-            q[0][j] = q1_clamped;  // Q1
-            q[1][j] = q2_clamped;  // Q2
-            q[2][j] = q3_clamped;  // Q3
+            q[0][j] = x(0);  // Q1
+            q[1][j] = x(1);  // Q2
+            q[2][j] = x(2);  // Q3
             q[3][j] = 0;           // Link 4 không sử dụng
             
             success_count++;
-            
-            // Sử dụng nghiệm hiện tại làm giá trị khởi tạo cho điểm tiếp theo
-            // (tính liên tục của quỹ đạo)
-            x(0) = q1_clamped;
-            x(1) = q2_clamped;
-            x(2) = q3_clamped;
         }
         else
         {
@@ -393,93 +413,89 @@ void CRobot::SolvingInverKinematicPosition()
         }
     }
     
-    std::cout << "Completed: " << success_count << "/" << pEx.size() 
-              << " points converged" << std::endl;
-    // if (limited_count > 0) {
-    //     std::cout << "Note: " << limited_count << " points had angles clamped to joint limits" << std::endl;
-    // }
 }
 
-/**
- * Kiểm tra và giới hạn góc quay của khớp trong phạm vi cho phép
- * 
- * @param jointIndex: Chỉ số khớp (0=Q1, 1=Q2, 2=Q3)
- * @param angle: Góc cần kiểm tra (đơn vị: radian)
- * @return: Góc sau khi giới hạn (đơn vị: radian)
- * 
- * Giới hạn theo khớp:
- * - Khớp 0 (Q1): -170° đến +170° (-2.967 đến +2.967 rad)
- * - Khớp 1 (Q2): +135° đến -105° (-2.356 đến -1.832 rad)
- * - Khớp 2 (Q3): +62° đến -205° (1.082 đến -3.576 rad)
- */
-double CRobot::ClampJointAngle(int jointIndex, double angle)
+
+void CRobot::SolvinginverseKinemaics_Velocity()
 {
-    double minAngle, maxAngle;
-    
-    // Xác định giới hạn theo từng khớp
-    switch(jointIndex)
-    {
-        case 0: // Khớp 1 (Q1)
-            minAngle = Q1_MIN * PI / 180.0;  // Chuyển từ độ sang radian
-            maxAngle = Q1_MAX * PI / 180.0;
-            break;
-            
-        case 1: // Khớp 2 (Q2)
-            minAngle = Q2_MIN * PI / 180.0;
-            maxAngle = Q2_MAX * PI / 180.0;
-            break;
-            
-        case 2: // Khớp 3 (Q3)
-            minAngle = Q3_MIN * PI / 180.0;
-            maxAngle = Q3_MAX * PI / 180.0;
-            break;
-            
-        default: // Khớp không xác định, không giới hạn
-            return angle;
-    }
-    
-    // Giới hạn góc trong phạm vi [minAngle, maxAngle]
-    if (angle < minAngle)
-        return minAngle;
-    else if (angle > maxAngle)
-        return maxAngle;
-    else
-        return angle;
+int numEq = 3; // Số phương trình (3 cho robot 3 khớp)
+smatrix A(numEq);   // Ma trận Jacobian
+vectorm b(numEq);   // Vector sai số
+vectorm x(numEq);  // Vector vận tốc khớp cần tìm
+for (size_t j = 0; j < pExv.size();j++){
+
+    double c1 = cos(q[0][j]);
+    double s1 = sin(q[0][j]);
+    double c2 = cos(q[1][j]);
+    double s2 = sin(q[1][j]);
+    double c23 = cos(q[1][j] + q[2][j]);
+    double s23 = sin(q[1][j] + q[2][j]);
+    double a2 = links[1].a;
+    double a3 = links[2].a;
+
+    A(0,0) = -s1*(a2*c2 + a3*c23);
+    A(0,1) = -c1*(a2*s2 + a3*s23);
+    A(0,2) = -c1*a3*s23;
+    A(1,0) = c1*(a2*c2 + a3*c23);
+    A(1,1) = -s1*(a2*s2 + a3*s23);
+    A(1,2) = -s1*a3*s23;
+    A(2,0) = 0;
+    A(2,1) = -a2*c2 - a3*c23;
+    A(2,2) = -a3*c23;
+
+    b(0) = pExv[j];
+    b(1) = pEyv[j];
+    b(2) = pEzv[j];
+
+    Gauss_Jordan(A, b, x);
+    qv[0][j] =x(0);
+    qv[1][j] =x(1); 
+    qv[2][j] =x(2);
+    qv[3][j] =x(3);
+
 }
 
-/**
- * Kiểm tra góc có nằm trong giới hạn cho phép không
- * 
- * @param jointIndex: Chỉ số khớp (0=Q1, 1=Q2, 2=Q3)
- * @param angle: Góc cần kiểm tra (đơn vị: radian)
- * @return: true nếu góc hợp lệ, false nếu vượt giới hạn
- */
-bool CRobot::IsJointAngleValid(int jointIndex, double angle)
+}
+
+void CRobot::SolvinginverseKinemaics_Acceleration()
 {
-    double minAngle, maxAngle;
-    
-    // Xác định giới hạn theo từng khớp
-    switch(jointIndex)
-    {
-        case 0: // Khớp 1 (Q1)
-            minAngle = Q1_MIN * PI / 180.0;
-            maxAngle = Q1_MAX * PI / 180.0;
-            break;
-            
-        case 1: // Khớp 2 (Q2)
-            minAngle = Q2_MIN * PI / 180.0;
-            maxAngle = Q2_MAX * PI / 180.0;
-            break;
-            
-        case 2: // Khớp 3 (Q3)
-            minAngle = Q3_MIN * PI / 180.0;
-            maxAngle = Q3_MAX * PI / 180.0;
-            break;
-            
-        default: // Khớp không xác định, coi như hợp lệ
-            return true;
-    }
-    
-    // Kiểm tra góc có nằm trong phạm vi không
-    return (angle >= minAngle && angle <= maxAngle);
+int numEq = 3; // Số phương trình (3 cho robot 3 khớp)
+smatrix A(numEq);   // Ma trận Jacobian
+vectorm b(numEq);   // Vector sai số
+vectorm x(numEq);  // Vector vận tốc khớp cần tìm
+for (size_t j = 0; j < pExa.size();j++){
+
+    double c1 = cos(q[0][j]);
+    double s1 = sin(q[0][j]);
+    double c2 = cos(q[1][j]);
+    double s2 = sin(q[1][j]);
+    double c23 = cos(q[1][j] + q[2][j]);
+    double s23 = sin(q[1][j] + q[2][j]);
+    double a2 = links[1].a;
+    double a3 = links[2].a;
+
+    A(0,0) = -s1*(a2*c2 + a3*c23);
+    A(0,1) = -c1*(a2*s2 + a3*s23);
+    A(0,2) = -c1*a3*s23;
+    A(1,0) = c1*(a2*c2 + a3*c23);
+    A(1,1) = -s1*(a2*s2 + a3*s23);
+    A(1,2) = -s1*a3*s23;
+    A(2,0) = 0;
+    A(2,1) = -a2*c2 - a3*c23;
+    A(2,2) = -a3*c23;
+
+    double qv1 = qv[0][j];
+    double qv2 = qv[1][j];
+    double qv3 = qv[2][j];
+
+    b(0) = pExa[j] + a2 * c2 * pow(qv[2][j], 2) + a3 * c23 * (pow(qv[2][j], 2) + pow(qv[3][j], 2));
+    b(1) = pEya[j] + a2 * s2 * pow(qv[2][j], 2) + a3 * s23 * (pow(qv[2][j], 2) + pow(qv[3][j], 2));
+    b(2) = pEza[j];
+
+    Gauss_Jordan(A, b, x);
+    qa[0][j] =x(0);
+    qa[1][j] =x(1); 
+    qa[2][j] =x(2);
+    qa[3][j] =x(3); 
+}
 }
