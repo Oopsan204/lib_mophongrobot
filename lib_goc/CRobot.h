@@ -24,15 +24,25 @@ class CRobot
 
 		int idCurrentPoint; // so diem hien tai dang tinh tren quy dao
 
+		// Hàm khởi tạo robot
 		CRobot();
+		// Hàm khởi tạo các thông số của robot
 		void init();
+		// Hàm giải bài toán động học thuận
 		void SolvingForwardKinematics();
+		// Hàm thiết lập số điểm trên quỹ đạo
 		void SetNumberPoint(const int& n);
+		// Hàm xóa dữ liệu của robot
 		void clear();
+		// Hàm thiết lập các biến khớp
 		void SetVariables();
+		// Hàm thiết lập vị trí điểm cuối
 		void SetEndPoint();
+		// Hàm giải bài toán động học ngược về vị trí
 		void SolvingInverseKinematics_Position();
+		// Hàm giải bài toán động học ngược về vận tốc
 		void SolvingInverseKinematics_Velocity();
+		// Hàm giải bài toán động học ngược về gia tốc
 		void SolvingInverseKinematics_Acceleration();
 };
 

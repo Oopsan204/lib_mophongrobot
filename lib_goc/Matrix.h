@@ -9,273 +9,246 @@ using namespace std;
 #endif
 //===========================================================================
 //===========================================================================
-//CLASS BASE MATRIX
+// LỚP MA TRẬN CƠ SỞ (CLASS BASE MATRIX)
 //===========================================================================
 //===========================================================================
 class matrix
 {
 protected:
-   int sizecol/*size collum*/,sizerow/*size row*/;
-   double **data;
+   int sizecol/*số cột*/,sizerow/*số hàng*/;
+   double **data; // Con trỏ đôi để lưu trữ dữ liệu ma trận
 //===========================================================================
 public:
-//1
+// constructors/destructor
+   // Hàm khởi tạo mặc định
    matrix();
-//2
+   // Hàm khởi tạo với số hàng và số cột cho trước
    matrix(const int & m,const int & n);
-//3
+   // Hàm khởi tạo sao chép
    matrix(const matrix & matrix1);
-//4
+   // Hàm hủy
    ~matrix();
 //===========================================================================
-//5
+// Các toán tử với ma trận khác
+   // Cộng hai ma trận
    friend matrix  operator+(const matrix & matrix1,const matrix & matrix2);
-   //matrix1+matrix2
-//6
+   // Trừ hai ma trận
    friend matrix  operator-(const matrix & matrix1,const matrix & matrix2);
-   //matrix1-matrix2
-//7
+   // Nhân hai ma trận
    friend  matrix  operator*(const matrix & matrix1,const matrix & matrix2);
-   //matrix1*matrix2
 //===========================================================================
-//8
-   matrix operator+=(const double & add);//matrix+=add
-//9
-   matrix operator-=(const double & minus);//matrix-=minus
-//10
-   matrix operator*=(const double & multiply);//matrix*=multiply
-//11
-   matrix operator/=(const double & devide);//matrix/=devide
+// Các toán tử gán với một số vô hướng
+   // Cộng ma trận với một số
+   matrix operator+=(const double & add);
+   // Trừ ma trận cho một số
+   matrix operator-=(const double & minus);
+   // Nhân ma trận với một số
+   matrix operator*=(const double & multiply);
+   // Chia ma trận cho một số
+   matrix operator/=(const double & devide);
 //===========================================================================
-//12 a
-   //matrix operator+(const double & add)const;//matrix=matrix+add
-   //b
+// Các toán tử với một số vô hướng (dạng friend)
+   // Cộng một số với ma trận
    friend matrix  operator+(const double & add,const matrix& matrix1);
-   //matrix=add+matrix
-   //c
+   // Cộng ma trận với một số
    friend matrix  operator+(const matrix& matrix1,const double & add);
-   //matrix=matrix+add
-//13 a
-  // matrix operator-(const double & minus)const;//matrix=matrix-minus
-   //b
+   // Trừ một số cho ma trận
    friend matrix  operator-(const double & minus,const matrix& matrix1);
-   //matrix=minus-matrix
-   //c
+   // Trừ ma trận cho một số
    friend matrix  operator-(const matrix& matrix1,const double & minus);
-   //matrix=matrix-minus
-//14 a
-   //matrix operator*(const double & multiply)const;//matrix=matrix*multiply
-   //b
+   // Nhân ma trận với một số
    friend matrix  operator*(const matrix& matrix1,const double & multiply);
-   //matrix=matrix1*multiply
-   //c
+   // Nhân một số với ma trận
    friend matrix  operator*(const double & multiply,const matrix& matrix1);
-   //matrix=multiply*matrix1
-//15
-   matrix operator/(const double & devide)const;//matrix=matrix/devide
+   // Chia ma trận cho một số
+   matrix operator/(const double & devide)const;
 //===========================================================================
-    //matrix operator+(const matrix & matrix1);//matrix=matrix+matrix1
-    //matrix operator-(const matrix & matrix1);//matrix=matrix-matrix1
-//16
-    matrix operator+=(const matrix & matrix1);//matrix+=matrix1
-//17
-    matrix operator-=(const matrix & matrix1);//matrix-=matrix1
+// Các toán tử gán với ma trận khác
+    // Cộng dồn ma trận
+    matrix operator+=(const matrix & matrix1);
+    // Trừ dồn ma trận
+    matrix operator-=(const matrix & matrix1);
 
 //===========================================================================
-//18
-   matrix operator++(int);//matrix++
-//19
-   matrix operator--(int);//matrix--
+// Toán tử tăng/giảm (hậu tố)
+   // Tăng tất cả phần tử lên 1 (hậu tố)
+   matrix operator++(int);
+   // Giảm tất cả phần tử đi 1 (hậu tố)
+   matrix operator--(int);
 
-//20
-   matrix& operator++();//++matrix
-//21
-   matrix& operator--();//--matrix
+// Toán tử tăng/giảm (tiền tố)
+   // Tăng tất cả phần tử lên 1 (tiền tố)
+   matrix& operator++();
+   // Giảm tất cả phần tử đi 1 (tiền tố)
+   matrix& operator--();
 //===========================================================================
-//22
-   friend matrix  operator!(const matrix & matrix1);//chuyen vi
+   // Toán tử chuyển vị (dạng friend)
+   friend matrix  operator!(const matrix & matrix1);
 //===========================================================================
-   //int&  operator[](int &i)operator[](int &j);//lay phan tu
-//23
-   double const & operator()(const int &i,const int &j)const;//lay phan tu
-   double & operator()(const int &i,const int &j);//lay phan tu
+// Truy cập phần tử
+   // Lấy giá trị phần tử (hằng)
+   double const & operator()(const int &i,const int &j)const;
+   // Lấy/Gán giá trị phần tử
+   double & operator()(const int &i,const int &j);
 //===========================================================================
-//24
+// Nhập/Xuất
+   // In ma trận ra màn hình (dạng friend)
    friend void  print(const matrix& matrix1);
-   //in mot matrix ra man hinh
-//25
+   // Toán tử xuất ra stream
    friend ostream& operator<<(ostream & co,const matrix & matrix2);
-   //in mot matrix ra man hinh
-//26
+   // Toán tử nhập từ stream
    friend istream& operator>>(istream & ci,matrix & matrix2);
-   //Nhap du lieu cho ma tran
 //===========================================================================
-//27
-//sua chua du lieu ma tran
-//   void change();
-//===========================================================================
-//28
-//gan ma tran
+// Phép gán và so sánh
+   // Toán tử gán
    matrix & operator=(const matrix&matrix1);
-//29
-   //so sanh ma tran
+   // Toán tử so sánh bằng
    friend int  operator==(const matrix&matrix1,const matrix&matrix2);
 //===========================================================================
-   //phep lay kich thuoc matrix
-//30
-   friend int  GetCol(const matrix&matrix1);//=sizecol
-//31
-   friend int  GetRow(const matrix&matrix1);//=sizerow
-//32
-//   matrix operator-();
+// Lấy kích thước
+   // Lấy số cột
+   friend int  GetCol(const matrix&matrix1);
+   // Lấy số hàng
+   friend int  GetRow(const matrix&matrix1);
+//===========================================================================
+// Toán tử đổi dấu
    matrix operator-(const matrix&matrix1);
 //===========================================================================
-//Tinh cac chuan cua matran
-//33
+// Tính các chuẩn của ma trận
+   // Tính chuẩn cột (chuẩn 1)
    friend double  StandardCollum(const matrix & m1);
-   //tinh chuan cot
-//34
+   // Tính chuẩn hàng (chuẩn vô cùng)
    friend double  StandardRow(const matrix & m1);
-   //tinh chuan hang
-//35
+   // Tính chuẩn Euclide (chuẩn Frobenius)
    friend double  StandardEuclide(const matrix & m1);
-   //tinh chuan Euclide
-//36
-   friend void  SetMember(matrix & mt,const int& i,const int& j, const double & d);//=sizerow
-//37
-//   void setdata(const int& i,const int& j,const double& d);
-//38
+//===========================================================================
+// Các hàm tiện ích khác
+   // Thiết lập giá trị một phần tử
+   friend void  SetMember(matrix & mt,const int& i,const int& j, const double & d);
+	// Tính chuẩn cực đại (giá trị tuyệt đối lớn nhất của phần tử)
 	friend double  StandardMax(const matrix & m);
-	//Tinh chuan cuc dai
-//39
+	// Hoán vị hai cột
 	friend void  SwapCol(matrix & m,const int & i,const int&j);
-	//Hoan vi 2 cot
-//40
+	// Hoán vị hai hàng
 	friend void  SwapRow(matrix & m,const int & i,const int&j);
-	//Hoan vi 2 hang
-//41
+	// Tìm vị trí phần tử lớn nhất trong cột
 	friend int  GetMaxInCol(const matrix &m,const int& i);
-	//lay vi tri phan tu lon nhat trong cot thu i
-//42
+	// Tìm vị trí phần tử lớn nhất trong hàng
 	friend int  GetMaxInRow(const matrix &m,const int& i);
-	//lay vi tri phan tu lon nhat trong hang thu i
-//43
+	// Tìm vị trí phần tử có giá trị tuyệt đối lớn nhất trong cột
 	friend int  GetAbsMaxInCol(const matrix &m,const int& i);
-	//lay vi tri phan tu lon nhat trong cot thu i
-//44
+	// Tìm vị trí phần tử có giá trị tuyệt đối lớn nhất trong hàng
 	friend int  GetAbsMaxInRow(const matrix &m,const int& i);
-	//lay vi tri phan tu lon nhat trong hang thu i
-//45
+	// Thay đổi kích thước ma trận
 	void SetSize(const int & m,const int & n);
-	//Dat kich thuoc ma tran
-//46
-   friend matrix  Transpose(const matrix & matrix1);//chuyen vi
+   // Hàm chuyển vị
+   friend matrix  Transpose(const matrix & matrix1);
 };
 //***************************************************************************
 //***************************************************************************
-//CLASS SQUARE MATRIX
+// LỚP MA TRẬN VUÔNG (CLASS SQUARE MATRIX)
 //***************************************************************************
 //***************************************************************************
 class  smatrix : public matrix
 {
-private: int size;
+private: int size; // Kích thước (số hàng = số cột)
 public:
-//1
+// constructors/destructor
+   // Hàm khởi tạo mặc định
    smatrix();
+   // Hàm hủy
    ~smatrix();
-//2
+   // Hàm khởi tạo với kích thước cho trước
    smatrix(const int & m);
-//3
+   // Hàm khởi tạo sao chép từ ma trận vuông khác
    smatrix(const smatrix & smatrix1);
-//4
+   // Hàm khởi tạo từ một ma trận thường (nếu là ma trận vuông)
    smatrix(const matrix & ma1);
-//5--phep phan tich LU------------------
+// Phân tích và tính toán
+   // Phân tích LU. boolRes=0 nếu thành công.
    friend matrix  LU(const smatrix & m1,int & boolRes);
-   //neu thanh cong ham cho boolRes=0 nguoc lai cho boolRes=-1
-   //Cho ma tran U la ma tran tam giac tren (tren duong cheo chinh)
-   //Cho ma tran L la ma tran tam giac duoi (duoi duong cheo chinh) voi cac phan tu tren duong cheo chinh = 1
-//6--phep tinh dinh thuc-----------------
+   // Tính định thức. boolRes=0 nếu thành công.
    friend double  det(const smatrix & m1,int& boolRes);
-   //neu thanh cong ham cho bool=0 nguoc lai cho bool=-1
-//7--phep tinh matran nghich dao---------
+   // Tính ma trận nghịch đảo. boolRes=0 nếu thành công.
    friend smatrix  inverse(const smatrix & m1,int & boolRes);
-	 //neu thanh cong ham cho bool=0 nguoc lai cho bool=-1
-//8--phep lay kich thuoc ma tran
+// Kích thước và thiết lập
+   // Lấy kích thước ma trận vuông
    friend int  GetSize(const smatrix & m1);
-//9
+   // Thay đổi kích thước ma trận vuông
    void SetSize(const int & m);
-	//Dat kich thuoc ma tran
-//10
+	// Chuyển ma trận thành ma trận đơn vị
    friend void	 SetToUnit(smatrix & m);
-//11
-   friend smatrix  NormalizeByCol(const smatrix & m);//chuan hoa cho cac cot : co do dai =1
-   friend smatrix  NormalizeByRow(const smatrix & m);//chuan hoa cho cac hang : co do dai =1
+// Chuẩn hóa
+   // Chuẩn hóa theo cột (độ dài mỗi vector cột = 1)
+   friend smatrix  NormalizeByCol(const smatrix & m);
+   // Chuẩn hóa theo hàng (độ dài mỗi vector hàng = 1)
+   friend smatrix  NormalizeByRow(const smatrix & m);
 };
 
 //***************************************************************************
 //***************************************************************************
-//CLASS VECTOR FROM MATRIX => VECTORM
+// LỚP VECTOR (Kế thừa từ ma trận) => VECTORM
 //***************************************************************************
 //***************************************************************************
 
 class  vectorm : public matrix
 {
-protected: int size;//double *data;
+protected: int size; // Kích thước (số phần tử)
 public:
-	//1
+// constructors/destructor
+	// Hàm khởi tạo mặc định
 	vectorm();
-	//2
+	// Hàm khởi tạo sao chép
 	vectorm(const vectorm& v);
+	// Hàm khởi tạo vector 2D
 	vectorm(const double& x, const double& y);
+	// Hàm khởi tạo vector 3D
 	vectorm(const double& x, const double& y, const double& z);
-	//3
+	// Hàm khởi tạo với kích thước cho trước
 	vectorm(const int& m);
-	void SetSize(const int& m);
-	//4
+	// Hàm hủy
 	~vectorm();
-	//5
-	friend double  module(const vectorm& a); /*Tinh do dai vectorm*/
-	friend double  length(const vectorm& a); /*Tinh do dai vectorm*/
-	//6
+// Kích thước
+	// Thay đổi kích thước vector
+	void SetSize(const int& m);
+// Tính độ dài và chuẩn
+	// Tính độ dài (module) của vector
+	friend double  module(const vectorm& a);
+	friend double  length(const vectorm& a);
+	// Tính tổng các giá trị tuyệt đối (chuẩn 1)
 	friend double  StandardVal(const vectorm& a);
-	/*Tinh chuan tuyet doi*/
-//7
+	// Tính chuẩn Euclide (độ dài, chuẩn 2)
 	friend double  StandardEuclide(const vectorm& a);
-	/*Tinh chuan Euclide*/
-//8
+	// Tính chuẩn cực đại (phần tử lớn nhất, chuẩn vô cùng)
 	friend double  StandardMax(const vectorm& a);
-	/*Tinh chuan cuc dai*/
-//9
+// Chuẩn hóa
+	// Chuẩn hóa vector (chia cho phần tử có giá trị tuyệt đối lớn nhất)
 	friend vectorm  standard(const vectorm& a);
-	//chuan hoa vectorm theo thanh phan co tri tuyet doi lon nhat
- //10
-	friend vectorm  normalize(const vectorm& a);   //chuan hoa theo Euclide//
-	//tra ve vectorm co do dai = 1 don vi
- //11
+	// Chuẩn hóa Euclide (đưa về vector đơn vị có độ dài = 1)
+	friend vectorm  normalize(const vectorm& a);
+// Chuyển đổi
+	// Khởi tạo vector từ ma trận (một hàng hoặc một cột)
 	vectorm(const matrix& ma1);
-	//khoi tao vectorm tu mot matrix dac biet : chi co 1 hang hoac 1 cot
- //12
+// Truy cập phần tử
+	// Lấy giá trị phần tử (hằng)
 	double const& operator()(const int& i)const;
+	// Lấy/Gán giá trị phần tử
 	double& operator()(const int& i);
-	//lay phan tu cua vectorm
+	// Lấy/Gán giá trị phần tử (dạng mảng)
 	double& operator[](const int& i);
 	double const& operator[](const int& i)const;
-	//13
+// Các phép toán vector
+	// Tích vô hướng (dot product)
 	friend double  dot(const vectorm& matrix1, const vectorm& matrix2);
-	//dot product or scalar product
-	//lay tich vo huong cua 2 vectorm (!vectorm1)*vectorm2
- //14
+	// Tích có hướng (cross product)
 	friend vectorm  cross(const vectorm& vectorm1, const vectorm& vectorm2);
-	//cross product
-	//lay tich co huong cua 2 vectorm (!vectorm1)*vectorm2
- //-----------
- //15
+	// Tính góc giữa hai vector (radian)
 	friend double  angle(const vectorm& vt1, const vectorm& vt2);
-	//cho goc giua 2 vectorm do bang radian
- //17
+// Thiết lập và gán
+	// Gán giá trị cho một phần tử
 	void SetData(const int& i, const double& d);
-	//19
+	// Lấy kích thước vector
 	friend int  GetSize(const vectorm& vt);
-	//28
+	// Toán tử gán
 	const vectorm& operator=(const vectorm& v);
 };

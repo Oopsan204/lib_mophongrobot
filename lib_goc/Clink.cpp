@@ -2,19 +2,22 @@
 #include <stdio.h>
 #include "Matrix.h"
 #include <math.h>
-// truyen vao cac tham so DH
+// Hàm khởi tạo mặc định cho lớp CLink.
+// Đặt tất cả các tham số DH và biến khớp về 0.
 CLink::CLink() 
 {
 		SetConstants(0.0, 0.0, 0.0, 0.0);
 		SetParameters(0.0, 0.0, 0.0, 0.0);
 }
-// copy constructor
+// Hàm khởi tạo sao chép.
+// Sao chép các giá trị từ một đối tượng CLink khác.
 CLink::CLink(const CLink& link)
 {
 	SetConstants(link.theta, link.alpha, link.a, link.d);
 	SetParameters(link.qtheta, link.qalpha, link.qa, link.qd);
 }
-// operator=
+// Toán tử gán.
+// Gán giá trị từ một đối tượng CLink khác, tránh tự gán.
 CLink& CLink::operator=(const CLink& link)
 {
 	if (this != &link)
@@ -24,7 +27,7 @@ CLink& CLink::operator=(const CLink& link)
 	}
 	return *this;
 }
-// set cac tham so hang so DH
+// Thiết lập các hằng số Denavit-Hartenberg (DH) cho một khâu robot.
 void CLink::SetConstants(const double thetain, const double alphain, const double ain, const double din)
 {
 	theta = thetain;
@@ -32,7 +35,7 @@ void CLink::SetConstants(const double thetain, const double alphain, const doubl
 	a = ain;
 	d = din;
 }
-// set cac bien khop
+// Thiết lập các tham số biến của khớp.
 void CLink::SetParameters(const double qthetain, const double qalphain, const double ain, const double din)
 {
 	qtheta = qthetain;
@@ -40,7 +43,8 @@ void CLink::SetParameters(const double qthetain, const double qalphain, const do
 	qa = ain;
 	qd = din;
 }
-// tinh toan ma tran DH
+// Tính toán và trả về ma trận biến đổi Denavit-Hartenberg (DH) cho khâu.
+// Ma trận này biểu diễn vị trí và hướng của hệ tọa độ của khâu so với hệ tọa độ của khâu trước đó.
 smatrix CLink::GetDHmatrix()
 {
 	smatrix DH_TABLE(4); 

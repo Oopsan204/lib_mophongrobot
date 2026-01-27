@@ -1,14 +1,16 @@
 ﻿#include "CRobot.h"
 #include "NumMethod.h"
 CRobot* pRobot = NULL;
-
+// Hàm khởi tạo của lớp CRobot.
+// Gọi hàm init() để thiết lập các thông số ban đầu và gán con trỏ toàn cục pRobot.
 CRobot::CRobot()
 {
 	init();
 	pRobot = this;
 }
 
-
+// Hàm khởi tạo các thông số của robot.
+// Thiết lập các tham số DH (chiều dài khâu) và chiều dài của dụng cụ.
 void CRobot::init()
 {
 	//Khoi tao cac tham so DH mac dinh cho robot 4 bieu do
@@ -17,6 +19,8 @@ void CRobot::init()
 	// tong chieu dai 500
 	ltool = 10.0; //chieu dai dao
 }
+// Giải bài toán động học thuận.
+// Tính toán vị trí (x, y, z) của điểm cuối (end-effector) từ các giá trị biến khớp đã cho (q).
 void CRobot::SolvingForwardKinematics()
 {
 	smatrix A0n, Ai;
@@ -28,10 +32,10 @@ void CRobot::SolvingForwardKinematics()
 
 	for (int j = 0; j < q[0].size(); j++)
 	{
-		links[0].SetParameters(0.0, 0.0, 0.0, 0.0);
-		links[1].SetParameters(0.0, 0.0, 0.0, q[1][j]);
-		links[2].SetParameters(q[2][j], 0.0, 0.0, 0.0);
-		links[3].SetParameters(q[3][j], 0.0, 0.0, 0.0);
+		links[0].SetParameters(0.0, 0.0, 0.0, 0.0); // fixed base
+		links[1].SetParameters(0.0, 0.0, 0.0, q[1][j]); // prismatic joint
+		links[2].SetParameters(q[2][j], 0.0, 0.0, 0.0); // revolute joint
+		links[3].SetParameters(q[3][j], 0.0, 0.0, 0.0); // revolute joint
 
 		A0n = links[0].GetDHmatrix();
 		for (int i = 1; i < NUMBER_LINKS; i++)
@@ -52,7 +56,8 @@ void CRobot::SolvingForwardKinematics()
 
 }
 
-
+// Thiết lập số lượng điểm trên quỹ đạo.
+// Cấp phát lại bộ nhớ cho tất cả các vector lưu trữ dữ liệu quỹ đạo (vị trí, vận tốc, gia tốc của điểm cuối và biến khớp).
 void CRobot::SetNumberPoint(const int& n)
 {
 	clear();
@@ -74,7 +79,7 @@ void CRobot::SetNumberPoint(const int& n)
 
 	}
 }
-
+// Xóa tất cả dữ liệu quỹ đạo đã được lưu trữ.
 void CRobot::clear()
 {
 	pEx.clear();
@@ -94,7 +99,8 @@ void CRobot::clear()
 		qa[i].clear();
 	}
 }
-
+// Thiết lập một quỹ đạo mẫu trong không gian khớp.
+// Tạo ra một chuỗi các giá trị biến khớp (q) theo một quy luật định trước (nội suy tuyến tính).
 void CRobot::SetVariables()
 {
 	// TODO: Add your implementation code here.
@@ -119,7 +125,8 @@ void CRobot::SetVariables()
 	}
 }
 
-
+// Hàm tính toán ma trận Jacobian (F) và vector lỗi (f) cho phương pháp Newton-Raphson.
+// Đây là hàm được truyền vào giải thuật tìm nghiệm.
 void funcJacobian(smatrix& F, vectorm& f, const vectorm& x)
 {
 	F.SetSize(GetSize(x));
@@ -149,7 +156,8 @@ void funcJacobian(smatrix& F, vectorm& f, const vectorm& x)
 	f(2) = x[0] - pRobot->ltool - pRobot->pEz[pRobot->idCurrentPoint];
 
 }
-
+// Thiết lập một quỹ đạo mẫu trong không gian Descartes (không gian làm việc).
+// Cụ thể là một quỹ đạo xoắn ốc.
 void CRobot::SetEndPoint()
 {
 
@@ -176,7 +184,9 @@ void CRobot::SetEndPoint()
 	}
 }
 
-
+// Giải bài toán động học ngược cho vị trí.
+// Tìm các giá trị biến khớp (q) để điểm cuối đạt được vị trí (pEx, pEy, pEz) mong muốn.
+// Sử dụng phương pháp lặp Newton-Raphson.
 void CRobot::SolvingInverseKinematics_Position()
 {
 	// TODO: Add your implementation code here.
@@ -200,7 +210,9 @@ void CRobot::SolvingInverseKinematics_Position()
 
 	}
 }
-
+// Giải bài toán động học ngược cho vận tốc.
+// Tính toán vận tốc các khớp (qv) từ vận tốc của điểm cuối (pExv, pEyv, pEzv) và vị trí khớp hiện tại (q).
+// Dựa trên mối quan hệ: p_dot = J(q) * q_dot, suy ra q_dot = J(q)^-1 * p_dot.
 void CRobot::SolvingInverseKinematics_Velocity()
 {
 	// TODO: Add your implementation code here.
@@ -239,7 +251,9 @@ void CRobot::SolvingInverseKinematics_Velocity()
 		qv[3][j] = x[2]; //vtheta2
 	}
 }
-
+// Giải bài toán động học ngược cho gia tốc.
+// Tính toán gia tốc các khớp (qa) từ gia tốc điểm cuối (pExa, pEya, pEza), vị trí và vận tốc khớp.
+// Dựa trên mối quan hệ: p_ddot = J_dot * q_dot + J * q_ddot.
 void CRobot::SolvingInverseKinematics_Acceleration()
 {
 	// TODO: Add your implementation code here.

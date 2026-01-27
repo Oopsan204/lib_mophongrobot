@@ -3,7 +3,7 @@
 #include <iostream>
 
 using namespace std;
-
+// Thiết lập một ma trận vuông 4x4 thành ma trận đơn vị.
 void SetIdentity(smatrix& m)
 {
 	m.SetSize(4);
@@ -13,6 +13,8 @@ void SetIdentity(smatrix& m)
 			m(i,j) = (i == j) ? 1 : 0;
 	}
 }
+// Thiết lập một vector 4 chiều cho tọa độ đồng nhất.
+// Thành phần cuối cùng (w) được đặt là 1, các thành phần khác là 0. Biểu diễn cho một điểm ở gốc tọa độ.
 void SetIdentity(vectorm& v)
 {
 	v.SetSize(4);
@@ -21,7 +23,7 @@ void SetIdentity(vectorm& v)
 		v[i] = (i == GetSize(v) - 1) ? 1 : 0;
 	}
 }
-
+// Thiết lập các thành phần (x, y, z) của một vector vị trí 4 chiều trong tọa độ đồng nhất.
 void SetVector(vectorm& v, double tx, double ty, double tz)
 {
 	SetIdentity(v);
@@ -29,7 +31,7 @@ void SetVector(vectorm& v, double tx, double ty, double tz)
 	v[1] = ty;
 	v[2] = tz;
 }
-
+// Tạo ma trận biến đổi tịnh tiến 4x4.
 void SetTranslationMatrix(smatrix& m, double tx, double ty, double tz)
 {
 	SetIdentity(m);
@@ -37,7 +39,7 @@ void SetTranslationMatrix(smatrix& m, double tx, double ty, double tz)
 	m(1, GetSize(m) - 1) = ty;
 	m(2, GetSize(m) - 1) = tz;
 }
-
+// Tạo ma trận biến đổi tỉ lệ 4x4.
 void SetScalationMatrix(smatrix& m, double sx, double sy, double sz)
 {
 	SetIdentity(m);
@@ -45,7 +47,7 @@ void SetScalationMatrix(smatrix& m, double sx, double sy, double sz)
 	m(1,1) = sy;
 	m(2,2) = sz;
 }
-
+// Tạo ma trận quay 4x4 quanh trục X một góc `angle` (radian).
 void SetRotationXMatrix(smatrix& m, double angle)
 {
 	SetIdentity(m);
@@ -54,6 +56,7 @@ void SetRotationXMatrix(smatrix& m, double angle)
 	m(2,1) = sin(angle);
 	m(2,2) = cos(angle);
 }
+// Tạo ma trận quay 4x4 quanh trục Y một góc `angle` (radian).
 void SetRotationYMatrix(smatrix& m, double angle)
 {
 	SetIdentity(m);
@@ -62,6 +65,7 @@ void SetRotationYMatrix(smatrix& m, double angle)
 	m(2,0) = -sin(angle);
 	m(2,2) = cos(angle);
 }
+// Tạo ma trận quay 4x4 quanh trục Z một góc `angle` (radian).
 void SetRotationZMatrix(smatrix& m, double angle)
 {
 	SetIdentity(m);
